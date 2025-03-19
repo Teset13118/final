@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Interactive Example</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        
+        .svg-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .controls {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #3367D6;
+        }
+        
+        .color-picker {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .color {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .color:hover {
+            transform: scale(1.1);
+        }
+        
+        .selected {
+            border: 2px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>ตัวอย่างการใช้งาน SVG แบบ Interactive</h1>
+    
+    <div class="controls">
+        <h3>ควบคุม SVG:</h3>
+        <button id="animateBtn">เริ่ม/หยุด Animation</button>
+        <button id="resetBtn">Reset</button>
+        
+        <h3>เปลี่ยนสีวงกลม:</h3>
+        <div class="color-picker">
+            <div class="color" style="background-color: #EA4335;" data-color="#EA4335"></div>
+            <div class="color" style="background-color: #FBBC05;" data-color="#FBBC05"></div>
+            <div class="color" style="background-color: #34A853;" data-color="#34A853"></div>
+            <div class="color" style="background-color: #4285F4;" data-color="#4285F4"></div>
+            <div class="color" style="background-color: #9C27B0;" data-color="#9C27B0"></div>
+        </div>
+    </div>
+    
+    <div class="svg-container">
+        <!-- Inline SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+            <!-- Rectangle -->
+            <rect x="20" y="20" width="100" height="80" fill="#4285F4" stroke="#333333" stroke-width="2" />
+            
+            <!-- Circle - ที่เราจะเปลี่ยนสี -->
+            <circle id="targetCircle" cx="200" cy="60" r="40" fill="#EA4335" stroke="#333333" stroke-width="2" />
+            
+            <!-- Ellipse -->
+            <ellipse cx="340" cy="60" rx="60" ry="30" fill="#FBBC05" stroke="#333333" stroke-width="2" />
+            
+            <!-- Line -->
+            <line x1="420" y1="20" x2="560" y2="100" stroke="#34A853" stroke-width="4" />
+            
+            <!-- Polyline -->
+            <polyline points="20,150 60,120 100,150 140,120 180,150" fill="none" stroke="#800080" stroke-width="3" />
+            
+            <!-- Polygon -->
+            <polygon points="220,120 260,120 280,160 240,180 200,160" fill="#FF6347" stroke="#333333" stroke-width="2" />
+            
+            <!-- Path -->
+            <path d="M340,120 C380,80 420,180 460,140" fill="none" stroke="#1E90FF" stroke-width="3" />
+            
+            <!-- Text -->
+            <text x="500" y="150" font-family="Arial" font-size="18" fill="#333333">SVG Text</text>
+            
+            <!-- Group with transformation -->
+            <g transform="translate(100, 240) rotate(15)">
+                <rect x="0" y="0" width="80" height="60" fill="#FF9900" stroke="#333333" stroke-width="2" />
+                <circle cx="100" cy="30" r="25" fill="#9C27B0" stroke="#333333" stroke-width="2" />
+            </g>
+            
+            <!-- Gradient -->
+            <defs>
+                <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#FF512F" />
+                    <stop offset="100%" stop-color="#F09819" />
+                </linearGradient>
+            </defs>
+            <rect x="220" y="220" width="160" height="80" fill="url(#gradient1)" stroke="#333333" stroke-width="2" />
+            
+            <!-- Filter -->
+            <defs>
+                <filter id="blur1" x="-10%" y="-10%" width="120%" height="120%">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="5" />
+                </filter>
+            </defs>
+            <circle cx="450" cy="260" r="40" fill="#3F51B5" filter="url(#blur1)" />
+            
+            <!-- Animation (ที่เราจะ ควบคุมด้วย JS) -->
+            <circle id="animatedCircle" cx="100" cy="350" r="20" fill="#E91E63">
+                <animate id="circleAnimation" attributeName="cx" from="100" to="500" dur="3s" repeatCount="indefinite" begin="indefinite" />
+            </circle>
+        </svg>
+    </div>
+    
+    <script>
+        // ดึง Element ที่ต้องการ
+        const animateBtn = document.getElementById('animateBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const circleAnimation = document.getElementById('circleAnimation');
+        const animatedCircle = document.getElementById('animatedCircle');
+        const targetCircle = document.getElementById('targetCircle');
+        const colorButtons = document.querySelectorAll('.color');
+        
+        // ตัวแปรเก็บสถานะการเล่น animation
+        let isAnimating = false;
+        
+        // เพิ่ม Event Listener สำหรับปุ่ม Animation
+        animateBtn.addEventListener('click', () => {
+            if (isAnimating) {
+                // หยุด animation
+                circleAnimation.setAttribute('begin', 'indefinite');
+                circleAnimation.endElement();
+                isAnimating = false;
+            } else {
+                // เริ่ม animation
+                circleAnimation.setAttribute('begin', '0s');
+                circleAnimation.beginElement();
+                isAnimating = true;
+            }
+        });
+        
+        // ปุ่ม Reset กลับไปตำแหน่งเริ่มต้น
+        resetBtn.addEventListener('click', () => {
+            // หยุด animation
+            circleAnimation.setAttribute('begin', 'indefinite');
+            circleAnimation.endElement();
+            isAnimating = false;
+            
+            // กำหนดตำแหน่งเริ่มต้น
+            animatedCircle.setAttribute('cx', '100');
+        });
+        
+        // เพิ่ม Event Listener สำหรับปุ่มสี
+        colorButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // ดึงค่าสีจาก data attribute
+                const color = button.getAttribute('data-color');
+                
+                // กำหนดสีให้กับวงกลม
+                targetCircle.setAttribute('fill', color);
+                
+                // เอา class selected ออกจากทุกปุ่ม
+                colorButtons.forEach(btn => btn.classList.remove('selected'));
+                
+                // เพิ่ม class selected ให้กับปุ่มที่ถูกคลิก
+                button.classList.add('selected');
+            });
+        });
+        
+        // กำหนดให้ปุ่มสีแรกถูกเลือกเป็นค่าเริ่มต้น
+        colorButtons[0].classList.add('selected');
+    </script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+// สมมติว่าเรามีไฟล์ JSON ที่ชื่อ teachers.json ใน path: /data/teachers.json
+// โครงสร้างไฟล์มีลักษณะดังนี้
+/*
+[
+  {
+    "id": 1,
+    "name": "รศ.ดร. โชติพัชร์ ภรณวลัย",
+    "nickname": "โช",
+    "subjects": ["Problem Solving and Computer Programming", "Communication Network Infrastructure"],
+    "room": "L304",
+    "floor": 3
+  },
+  {
+    "id": 2,
+    "name": "ผศ.ดร. มานพ พันธ์โคกกรวด",
+    "nickname": "มานพ",
+    "subjects": ["Web Programming", "NodeJS", "PHP"],
+    "room": "L207",
+    "floor": 2
+  },
+  {
+    "id": 3,
+    "name": "ศ.ดร. สุขสันต์ พาณิชพาพิบูล",
+    "nickname": "จิมมี่",
+    "subjects": ["Introduction to Computer System", "Probability and Statistics"],
+    "room": "L203",
+    "floor": 2
+  }
+]
+*/
+
+// components/TeachersList.js
+import React from 'react';
+import teachersData from '../data/teachers.json'; // นำเข้าไฟล์ JSON โดยตรง
+
+const TeachersList = () => {
+  // สามารถใช้ข้อมูลได้ทันทีโดยไม่ต้องใช้ useEffect หรือ useState 
+  // เพราะข้อมูลถูกโหลดมาพร้อมกับ component
+
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-6">รายชื่ออาจารย์คณะเทคโนโลยีสารสนเทศ</h1>
+
+      {/* 1. แสดงเป็นตาราง */}
+      <div className="mb-10">
+        <h2 className="text-xl font-semibold mb-4">รายชื่ออาจารย์ (ตาราง)</h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="px-4 py-2 border">ID</th>
+                <th className="px-4 py-2 border">ชื่อ</th>
+                <th className="px-4 py-2 border">ชื่อเล่น</th>
+                <th className="px-4 py-2 border">วิชาที่สอน</th>
+                <th className="px-4 py-2 border">ห้อง</th>
+                <th className="px-4 py-2 border">ชั้น</th>
+              </tr>
+            </thead>
+            <tbody>
+              {teachersData.map((teacher) => (
+                <tr key={teacher.id}>
+                  <td className="px-4 py-2 border">{teacher.id}</td>
+                  <td className="px-4 py-2 border">{teacher.name}</td>
+                  <td className="px-4 py-2 border">{teacher.nickname}</td>
+                  <td className="px-4 py-2 border">
+                    <ul className="list-disc list-inside">
+                      {teacher.subjects.map((subject, index) => (
+                        <li key={index}>{subject}</li>
+                      ))}
+                    </ul>
+                  </td>
+                  <td className="px-4 py-2 border">{teacher.room}</td>
+                  <td className="px-4 py-2 border">{teacher.floor}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* 2. แสดงเป็น Cards */}
+      <div className="mb-10">
+        <h2 className="text-xl font-semibold mb-4">รายชื่ออาจารย์ (Cards)</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {teachersData.map((teacher) => (
+            <div key={teacher.id} className="bg-white rounded-lg shadow-md overflow-hidden border">
+              <div className="p-4">
+                <h3 className="text-lg font-bold">{teacher.name}</h3>
+                <p className="text-gray-600">ชื่อเล่น: {teacher.nickname}</p>
+                <p className="text-gray-600">ห้อง: {teacher.room}</p>
+                <p className="text-gray-600">ชั้น: {teacher.floor}</p>
+                
+                <div className="mt-4">
+                  <h4 className="font-medium mb-2">วิชาที่สอน:</h4>
+                  <ul className="list-disc list-inside">
+                    {teacher.subjects.map((subject, index) => (
+                      <li key={index} className="text-gray-700">{subject}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. แสดงเป็น Dropdown */}
+      <div className="mb-10">
+        <h2 className="text-xl font-semibold mb-4">เลือกอาจารย์</h2>
+        <select className="block w-full md:w-1/3 p-2 border rounded-md">
+          <option value="">-- กรุณาเลือกอาจารย์ --</option>
+          {teachersData.map((teacher) => (
+            <option key={teacher.id} value={teacher.id}>
+              {teacher.name} ({teacher.nickname})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* 4. แสดงข้อมูลแยกตามชั้น */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">อาจารย์แยกตามชั้น</h2>
+        
+        {/* จัดกลุ่มข้อมูลตามชั้น */}
+        {Array.from(new Set(teachersData.map(teacher => teacher.floor)))
+          .sort((a, b) => a - b) // เรียงลำดับชั้นจากน้อยไปมาก
+          .map(floor => (
+            <div key={floor} className="mb-6">
+              <h3 className="text-lg font-semibold mb-2">ชั้น {floor}</h3>
+              <ul className="list-disc list-inside pl-4">
+                {teachersData
+                  .filter(teacher => teacher.floor === floor)
+                  .map(teacher => (
+                    <li key={teacher.id} className="mb-1">
+                      {teacher.name} ({teacher.nickname}) - ห้อง {teacher.room}
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  );
+};
+
+export default TeachersList;
+
+// นำไปใช้ใน pages/index.js หรือหน้าอื่นๆ
+import TeachersList from '../components/TeachersList';
+
+export default function Home() {
+  return (
+    <div className="container mx-auto p-4">
+      <TeachersList />
+    </div>
+  );
+}
